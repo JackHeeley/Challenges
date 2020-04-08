@@ -1,0 +1,52 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="pecoff.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="pecoff.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Logbook.txt">
+      <Filter>Documentation Files</Filter>
+    </Text>
+    <Text Include="ReadMe.txt">
+      <Filter>Documentation Files</Filter>
+    </Text>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{53e78abc-8466-4979-8c6e-f74d8adc8464}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{1f61c84d-a731-4cb7-bb11-510204a4df87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Documentation Files">
+      <UniqueIdentifier>{7b4049b8-857e-48d3-9a25-8bd60369b2f6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BH_US_11_VuksanPericin_PECOFF_WP.pdf">
+      <Filter>Documentation Files</Filter>
+    </None>
+    <None Include="pecoff_v83.docx">
+      <Filter>Documentation Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>

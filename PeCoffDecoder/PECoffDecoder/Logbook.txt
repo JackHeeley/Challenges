@@ -1,0 +1,182 @@
+========================================================================
+    CONSOLE APPLICATION : Challenge2 Project Overview
+========================================================================
+
+AppWizard has created this Challenge2 application for you.
+
+This file contains a summary of what you will find in each of the files that
+make up your Challenge2 application.
+
+
+Challenge2.vcxproj
+    This is the main project file for VC++ projects generated using an Application Wizard.
+    It contains information about the version of Visual C++ that generated the file, and
+    information about the platforms, configurations, and project features selected with the
+    Application Wizard.
+
+Challenge2.vcxproj.filters
+    This is the filters file for VC++ projects generated using an Application Wizard. 
+    It contains information about the association between the files in your project 
+    and the filters. This association is used in the IDE to show grouping of files with
+    similar extensions under a specific node (for e.g. ".cpp" files are associated with the
+    "Source Files" filter).
+
+Challenge2.cpp
+    This is the main application source file.
+
+/////////////////////////////////////////////////////////////////////////////
+Other standard files:
+
+StdAfx.h, StdAfx.cpp
+    These files are used to build a precompiled header (PCH) file
+    named Challenge2.pch and a precompiled types file named StdAfx.obj.
+
+/////////////////////////////////////////////////////////////////////////////
+Other notes:
+
+AppWizard uses "TODO:" comments to indicate parts of the source code you
+should add to or customize.
+
+/////////////////////////////////////////////////////////////////////////////
+
+201509180953 Began challenge
+
+CHALLENGE ASSIGNMENT 
+====================
+Write a function that given a file path returns the type of executable file 
+that file is and if it is a 32 or 64 bit image.
+
+Having these possibilities:
+typedef enum _EXECUTABLE_TYPE
+{
+	FileExeTypeNone, // or invalid exe
+	FileExeTypeDll, // the file is a DLL
+	FileExeTypeExe, // the file a normal EXE file
+	FileExeTypeSys, // the file is driver
+	FileExeTypeDosExe, // the file is a dos style executable
+	FileExeTypeMax 
+} EXECUTABLE_TYPE,*PEXECUTABLE_TYPE;
+
+Function header: EXECUTABLE_TYPE GetFileExeType( __in PCHAR FilePath, __out PBOOLEAN *Is64BitImage);
+ 
+Test the function with different file paths from Windows\system32 and Windows\system32\drivers folders and check if you were right.
+
+============
+201509180953 Decided to do this one in CPP (Hence Win32 ConsoleApplication project choice in VS2013)
+201509181009 Added solution to home SVN repository. PAUSE.
+
+201509181230 RESUME 
+Design option 1. 
+
+I know that excutables contain a PE(?)HEADER with executable signature realmode/protected mode indicators
+(you can have both in a single file - so petentially for ancient legacy reason you might have a 32 bit real mode and 64-bit 
+proteceted mode parts in one executable. It's a good presumption that the header conains enough encoded data to perform 
+this assignment. So one approach is to open (not just .exe files) for read, then stream in the header and decode it.
+
+Design option 2. Google and see what exists to help. This is needed for option 1 anyway, so it might turn up a better
+strategy, or it might confirm option 1.
+
+Design option 3. Search the SDK & DDK material for guidance.
+
+Seems I was on the right path with option 1. JUST NEED SONME STRUCTS TO DECODE PE HEADER (CHECK WIKIPEDIA MAP 
+to see if exe type and 32/64 are accessible in the first part, or if we need to dereference pointers...) 
+
+0x5A4D is the PE signature: We'll ignore the dos stub - which might contain (Intel 8088 8-bit) 16 or 32 bit code.
+Means reading 0x3C to skip to PE HEADER reference...
+Wiki links to latest reference PE/COFF here... https://msdn.microsoft.com/en-us/windows/hardware/gg463119.aspx
+
+201509181320 Downloaded added PECOFF spec to project and scanned it.
+
+The COFF optional header magic number" determines whether an image is a PE32 or PE32+ executable. 
+
+Although not absolutely expressed as in tne assignment PE32 is restricted to 32 bit formats, and PE32+ supports 
+64 bit address. So we can assume the support is always used and PE32+ simply mweans a 64 bit 'program'.
+This is at a fixed location in the file and simply has one of two values.So that is one possibility.
+
+2.3.2 Characteristics (flags) of COFF header appear to offer everything we need in one place.
+
+1. Open candidate for read read file start into memory
+2. Check signature in first 2 bytes 
+3. Read the file offset specified at offset 0x3c, 
+4. Check the 4-byte signature at that offset. (that identifies the file as a PE format image file. This signature is “PE\0\0” (the letters “P” and “E” followed by two null bytes).
+5. Read the COFF header 
+6. Decode the Characteristics flags
+
+201509181340  Draft approach settled
+There must be plenty of ready made C typedefs to support this...Googling.
+
+http://www.csn.ul.ie/~caolan/pub/winresdump/winresdump/doc/pefile2.html
+
+Identifies that winnt.h contains typedef for IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADER;
+201509181347 This link provides code that goes beyond this assignment (we can cut a part out and test it)
+201509181506 Code now reads argv[0] (self) as binary and fragment from sample decodes a DOS signature at start. 
+'MZ' is present in the file so that seems good.
+
+201509181527 However sample falls at the first hurdle. It misses the PE Header.
+201509181623 Huh sample is good. STL stream is bad and it dropped some bytes. Presumably misused it somehow, but I can't see it. 
+
+Oldstyle c++ using fopen_s works JUST fine. 
+
+Characteristics do not reflect the attributes as expected. In dll case 0x2022 (As we knew already, DLL & "executable" are both set on DLL)
+Characteristics do not reflect the attributes as expected. In nfts.sys case 0x0042 (NT signature and "executable" large address aware) but not the sys flag.
+
+201509181802 Going to have to google for more advice.
+201509181923 Job done apart from being messy code without proper checks (and a consensus on PE interpretation, instead of statements of fact from MS themselves). PAUSE
+
+201509182100 RESUME. Cleaned up a little.
+201509182258 Still experiencing access problems on Windows 10 when trying to open files in C:\Windows\... for read (eg .sys) from program. (can copy them from cmdline etc.) 
+
+201509191130 - 201209201620. Reworked as utf8 everwhere c++11 project with a full unit test.
+
+Actual challenge2 code is embedded in this solution SEE Project Win32 pecoff class 
+pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
+
+**********************************************************************************************************************************
+******* NOTE THAT THE CHALLENGE2 MAIN PROGRAM IS UNRELATED TO THE ASSIGNMENT (ALTHOUGH THE FRAMEWORK COULD BE RE-PURPOSED) *******
+*******                                  JUST RUN THE UNIT TESTS AND INSPECT THE CODE                                      *******
+**********************************************************************************************************************************
+
+201509211000 - Gabriel reviewed/identified limitation on driver identification (needs to decode imports and identify ntoskrnl.exe)
+			   I also want to do this challenge in the modern c++ idiom
+
+201509201456 - Experiencing all manner of complier and linker crashes when trying to pimpl pecoff.
+201509201822 - Removed the utf-8 everywhere c++11 framework to refocus on challenge.
+
+201509201822 - Supplied simple cmdline program for testing. 
+201509201912 - Discovered how to unit test parts of a program in vs2013 - just supply the .obj files to the unit test link. Duuh!
+201509202030 - Pimpl idiom for pecoff now works just fine.
+
+201509240900 - Adding a decoder to spot if ntoskrnl.exe is an import in image 
+201509240917 - Downloaded Matt Pietrik's pedump code. Re-worked nmake & code to get it up and running for assessment.
+201509241000 - SOME parts still DO work. pedump code shows its age: its 32-bit code for 32-bit images
+201509241115 - Re-puropsed a fragment from PeDump (32bit images) and tested it works (x86 is good, x64 binary has bugs)
+201509241335 - Pointer arithmetic fixed (32 bit image support now works as x86 & x64)
+201509241343 - Gabriel's point addressed. Now fully featured (except for the read access issue that limited testing the main program).
+201509241833 - Fixed the read access issue that limited testing the main program.
+201509250230 - Finished cleanup and refactoring to basic level.
+201509250456 - Finished cleanup and refactoring (recombining & removing 32 and 64 specialisations of helper class)
+201509250509 - Challenge2 complete.
+
+201509261342 - I struggled to get Pietrik code to work 32/64. But surely the IMAGE_NT_HEADERS is an overlay of the two
+			   architectural structures and BECAUSE it contains the directory array surely this is an indication that this
+			   is fixed location in both architectures. The balance of probablility is that I've misinterpreted the cause of
+			   some bug(s)and chosen an over-safe design (with separate 32/64 architectures).I suspect that at least SOME of 
+			   this  is not necessary (and all of it is complex). Worth another look.
+			   
+201509261358 - Confirmed that subsystemIitialiazer 32/64 can simply use the pNtHeaders (doesnt need the 32/64 bit struct overlays)
+201509261509 - Indeed code was massively over defensive. 32/64 affects the later part of the optional header. Essentially only
+			   the function isKernelModeInitializer needs to be architecturally aware... 
+201509261546 - Ahem... because the other parts arent used any more!
+
+201509261834 - Revised reviewed and reworked comments. 1.0.0.481 (481 = svn head revision in home repo)
+
+201509271113 - Hmmm... Here's an isuue with prototyping to build confidence in descriptions. I've now got a nice "derivation"
+			   of a difficult approach to the problem (working with pointers when image contains rva's). However we have the 
+			   luxury of a byte array image where the rva's are just indices into this byte array. Surely this in combination
+			   with references can simplify a great deal of ths code? Give it a go...
+
+201509271654 - Check-in as build 482 Most of the simplification is done only the tricky bit.
+
+201509272055 - Check-in as build 483 - Satisfied with this approach.
+
+201509272246 - Check-in as build 484 - Cleanup, comment and consistency changes.

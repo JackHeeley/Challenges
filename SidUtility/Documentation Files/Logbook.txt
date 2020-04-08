@@ -1,0 +1,123 @@
+﻿CHALLENGE 1
+===========
+1) Write a function that takes a SID as a parameter and returns the sid as a string, the user-name and the domain name of that SID. If user-name and domain are not possible return
+only the sid as a string.You can write the code in C# but if you do I want you to use pinvoked win32 functions to manipulate SIDs.
+
+Example:
+
+PCHAR 
+GetFormattedSid(
+    __in PSID Sid
+    );
+
+Now if I run this function I would expect this kind of output:
+
+PCHAR sidFormat = GetFormattedSid(mySid);
+
+if (sidFormat != NULL)
+{
+       printf("%s\r\n", sidFormat);
+       free(sidFormat);
+}
+
+output:   XXX\gabriel.bercea : S-1-5-21-545566299-1214877287-2695374493
+ 
+
+Test the function by giving the SID of the current thread as input.
+Now also test the function by giving the SID of a service that runs under another user.​
+Do these tests programmatically not, hardcoding the SIDs in.
+
+---------------------------------
+201509161605 Q: Which language?
+201509161610 A: C# PINVOKE IMPLIES C STYLE WIN32 API THEREFORE C WOULD BE MOST STRAIGHTFORWARD AND C++ WOULD BE BETTER
+HOWEVER I'LL DO THIS IN C# BECAUSE THAT'S A GOOD PART OF THE CHALLENGE
+
+---------------------------
+201509161611 Q: Which API?
+201509161619  https://msdn.microsoft.com/en-us/library/windows/desktop/aa375742(v=vs.85).aspx
+
+Authorization functions (winnt.h) Specifically LookupAccountName 
+https://msdn.microsoft.com/en-us/library/windows/desktop/aa379159(v=vs.85).aspx
+
+---------------
+Q PINVOKE THIS? Search for a ready ade pinvoke and check the parameter and return types are good
+
+ BOOL WINAPI LookupAccountName(
+  _In_opt_  LPCTSTR       lpSystemName,
+  _In_      LPCTSTR       lpAccountName,
+  _Out_opt_ PSID          Sid,
+  _Inout_   LPDWORD       cbSid,
+  _Out_opt_ LPTSTR        ReferencedDomainName,
+  _Inout_   LPDWORD       cchReferencedDomainName,
+  _Out_     PSID_NAME_USE peUse
+);
+
+
+pinvoke.net offers this...
+http://www.pinvoke.net/default.aspx/advapi32.lookupaccountname
+
+[DllImport("advapi32.dll", SetLastError=true)]
+ static extern bool LookupAccountName (
+     string lpSystemName,
+     string lpAccountName,
+     [MarshalAs(UnmanagedType.LPArray)] byte[] Sid,
+     ref uint cbSid,
+     StringBuilder ReferencedDomainName,
+     ref uint cchReferencedDomainName,
+     out SID_NAME_USE peUse);
+
+This looks Kosher as it at least tries to deal with marshalling (type translation) and stringbuilding (memory allocation) questions. 
+Example on this web page appears to give a complete answer to the challenge. Job done I think @201509161635. (1/2 hour) + testing time.
+
+It builds as VS2013 standard C# console application, and runs correctly as offered. 
+Example looks like it contains most (or all?) the elements needed to perform the assignment but it doesn't conform to the API in the assignment.
+
+201509161650 Pausing. Will compare/verify with assignment tomorrow 
+
+201509170545 Transform sample to match assignment...
+LookupAccountSid is a closer match to assignment. See http://www.pinvoke.net/default.aspx/advapi32/LookupAccountSid.html
+
+201509170630 Pausing.
+Partly coded using example (hard coded admin test string). Returns "BUILTIN\\Administrators : SidTypeAlias" instead of the specified output. 
+
+At least these 4 things to correct: 
+	1. double backslash
+	2. using the wrong Sidlike parameter 
+	3. likely ToString wont format the (best) parameter that I do have. 
+	4. hardcoded input Sid.
+
+201509170840 double backslash was copied over from the debug output isnt in the string itself.
+
+201509170846 To translate Sid as byte array to standards Sid string format (S - - - delimited in groups). Two options. 
+1. Its trivial to hand code this from the byte array form.
+2. Using built in advapi functions if they exist would save code and guarantee consistency (there might be special cases).
+
+201509170853 Checking the advapi spec yields ConvertSidToString
+
+201509171037 Packaged as SidUtils class with complexity hiding and Win32 exception handling.
+
+201509171037 Finished intellisense commenting and hand-checked for possible errors and memory leaks.
+201509171248 Finished basic unit test good/bad paths.
+
+201509171352 Only half way there. Still have to code the tests that were actually requested in the challenge.
+
+201509171354 Need a way to get SID from thread.
+
+201509171400 Added SidUtility method accepting thread owner name (E.g. Thread.CurrentPrincipal.Identity.Name)
+201509171800 Added ProcessOwnerSid method accepting a process. Pause.
+
+201509180444 Resuming. Repackage rename the two support classes.
+
+201509180537 Can add a clean separation into utility namespaces but that leads to problems referencing them. 
+
+Eg Using My.AdvApi32 from ConsoleApplication1 is fine, but try the same thing from My.SidUtilities within the same assembly and you hit a limitation.
+
+Either have to add an explicit reference to a built dll or object containing the referenced namespace, OR accept that the using statements dont work locally
+and you have to supply full explicit namsepace paths in source of My.SidUtilities (not acceptable). Hmmm.
+
+201509170600 Compromise: Sidutilities remain part of ConsoleApplication1
+201509170808 Added an enum to localise system error code definitions
+
+201509170900 Reworked that bad idea (to use const int). Restructured solution to make room for challenge 2 (in CPP)
+201509170940 Challenge 1 complete.
+201603050008 Upgrade to Visual Studio 2015 & .Net 4.6.1

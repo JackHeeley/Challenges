@@ -1,0 +1,77 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="pecoff_unit_test.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="stdafx.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="stdafx.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="targetver.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utf8_assert.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="TestData\DOS\CHKDSK.EXE">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\DOS\FORMAT.COM">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\DOS\IO.SYS">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\KeePass.exe">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\KeePassLibC32.dll">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\KeePassLibC64.dll">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_amd64.dll">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_amd64.sys">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_ia64.dll">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_ia64.sys">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_x86.dll">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\libusb0_x86.sys">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\notepad.exe">
+      <Filter>Test Data Files</Filter>
+    </None>
+    <None Include="TestData\ntfs.sys">
+      <Filter>Test Data Files</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{c7f495ed-f4d5-4424-ba81-2e37cf72ca85}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4f5a5a50-2752-4d26-9707-e894b456d77b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test Data Files">
+      <UniqueIdentifier>{29bc345a-7725-42d0-8e30-d8e9dc8b55a6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
