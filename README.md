@@ -1,2 +1,2 @@
-# App3Dev
-Modern CPP sample
+# Challenges
+Worked response to interesting technical challenges set as an exercise
