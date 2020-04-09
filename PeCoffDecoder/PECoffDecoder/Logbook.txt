@@ -180,3 +180,5 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 201509272055 - Check-in as build 483 - Satisfied with this approach.
 
 201509272246 - Check-in as build 484 - Cleanup, comment and consistency changes.
+
+202004092145 - Upgrade to Visual Studio 2019 (v16.5.3) & published on Github
