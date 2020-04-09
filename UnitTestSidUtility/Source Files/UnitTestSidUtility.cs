@@ -55,8 +55,6 @@ namespace UnitTestChallenges
             Assert.AreEqual(Kernel32.ERROR_PROCESS_MODE_NOT_BACKGROUND, 403);
         }
 
-  
-
         [TestMethod]
         public void TestWithThreadOwnerSid() // Test the function by giving the SID of the current thread as input.
         {

@@ -57,265 +57,265 @@ class pecoff::pecoff_impl
 
 public:
 
-	///<summary>default ctor</summary>
-	pecoff_impl() {	initialized = false; }	
-	
-	///<summary>ctor with fileName</summary>
-	///<param name='aFileName'>filename of a candidate pecoff file</param>
-	pecoff_impl(std::string aFileName) 	{ initialized = initialize(aFileName); }
-	
-	///<summary>default dtor</summary>
-	~pecoff_impl() = default;
+   ///<summary>default ctor</summary>
+   pecoff_impl() {	initialized = false; }	
 
-	///<summary>get initialized property</summary>
-	bool inline getInitialized()	{ return initialized; }
+   ///<summary>ctor with fileName</summary>
+   ///<param name='aFileName'>filename of a candidate pecoff file</param>
+   pecoff_impl(std::string aFileName) 	{ initialized = initialize(aFileName); }
+   
+   ///<summary>default dtor</summary>
+   ~pecoff_impl() = default;
 
-	///<summary>get 64bit peoperty</summary>
-	bool inline get64bit() 	{ if (!initialized)	throw std::exception("pecoff not initialized");	return _64bit; }
+   ///<summary>get initialized property</summary>
+   bool inline getInitialized()	{ return initialized; }
 
-	///<asummary>get ExecutableType property</summary>
-	ExecutableType inline getExecutableType() {	if (!initialized) throw std::exception("pecoff not initialized"); return executableType; }
+   ///<summary>get 64bit peoperty</summary>
+   bool inline get64bit() 	{ if (!initialized)	throw std::exception("pecoff not initialized");	return _64bit; }
+
+   ///<asummary>get ExecutableType property</summary>
+   ExecutableType inline getExecutableType() {	if (!initialized) throw std::exception("pecoff not initialized"); return executableType; }
 
 private:
 
-	//private invariant members backing the public pecoff properties 
-	bool initialized;
-	ExecutableType executableType;
-	bool _64bit;
+   //private invariant members backing the public pecoff properties 
+   bool initialized;
+   ExecutableType executableType;
+   bool _64bit;
 
-	// container for the file content 
-	std::vector<BYTE> image;
+   // container for the file content 
+   std::vector<BYTE> image;
 
-	// all the architectural magic we need to work with the image is declared here (style here puts trust in optimizer) ...
+   // all the architectural magic we need to work with the image is declared here (style here puts trust in optimizer) ...
 
-	inline DWORD getRvaFromPtr(UINT_PTR ptr) { return (DWORD)(ptr - (UINT_PTR)&image[0]); }
-	inline UINT_PTR getPtrFromRva(DWORD rva) { return (UINT_PTR)&image[rva]; }
+   inline DWORD getRvaFromPtr(UINT_PTR ptr) { return (DWORD)(ptr - (UINT_PTR)&image[0]); }
+   inline UINT_PTR getPtrFromRva(DWORD rva) { return (UINT_PTR)&image[rva]; }
 
-	inline IMAGE_DOS_HEADER& getDosHeader() { return *(PIMAGE_DOS_HEADER)(&image[0]); }
-	inline IMAGE_NT_HEADERS& getNtHeaders() { return *(PIMAGE_NT_HEADERS)(&image[getDosHeader().e_lfanew]); }
-	inline IMAGE_OPTIONAL_HEADER& getOptionalHeader() { return *(PIMAGE_OPTIONAL_HEADER)(&getNtHeaders().OptionalHeader); }
-	inline IMAGE_OPTIONAL_HEADER32& getOptionalHeader32() { return *(PIMAGE_OPTIONAL_HEADER32)(&getNtHeaders().OptionalHeader); }
-	inline IMAGE_OPTIONAL_HEADER64& getOptionalHeader64() { return *(PIMAGE_OPTIONAL_HEADER64)(&getNtHeaders().OptionalHeader); }
+   inline IMAGE_DOS_HEADER& getDosHeader() { return *(PIMAGE_DOS_HEADER)(&image[0]); }
+   inline IMAGE_NT_HEADERS& getNtHeaders() { return *(PIMAGE_NT_HEADERS)(&image[getDosHeader().e_lfanew]); }
+   inline IMAGE_OPTIONAL_HEADER& getOptionalHeader() { return *(PIMAGE_OPTIONAL_HEADER)(&getNtHeaders().OptionalHeader); }
+   inline IMAGE_OPTIONAL_HEADER32& getOptionalHeader32() { return *(PIMAGE_OPTIONAL_HEADER32)(&getNtHeaders().OptionalHeader); }
+   inline IMAGE_OPTIONAL_HEADER64& getOptionalHeader64() { return *(PIMAGE_OPTIONAL_HEADER64)(&getNtHeaders().OptionalHeader); }
 
-	inline IMAGE_SECTION_HEADER& getFirstSection() { return *(PIMAGE_SECTION_HEADER)(&image[getDosHeader().e_lfanew + FIELD_OFFSET(IMAGE_NT_HEADERS, OptionalHeader) + getNtHeaders().FileHeader.SizeOfOptionalHeader]); }
-	inline IMAGE_IMPORT_DESCRIPTOR& getImportDescriptor(DWORD rva)	{ return *(PIMAGE_IMPORT_DESCRIPTOR)(&image[getSectionRelativeRva(rva)]); }
-	inline IMAGE_SECTION_HEADER& getSectionFromRva(DWORD rva) { return *(PIMAGE_SECTION_HEADER)(&image[rva]); }
-	inline DWORD getSectionRelativeRva(DWORD rva) { return rva - (findEnclosingSection(rva).VirtualAddress - findEnclosingSection(rva).PointerToRawData); }
-	inline IMAGE_SECTION_HEADER& findEnclosingSection(DWORD rva)
-	{
-		DWORD sectionRva = getRvaFromPtr((UINT_PTR)&getFirstSection());
-		for (unsigned i = 0; i < getNtHeaders().FileHeader.NumberOfSections; i++)
-		{
-			IMAGE_SECTION_HEADER section = getSectionFromRva(sectionRva);
-			if ((rva >= getSectionFromRva(sectionRva).VirtualAddress) && (rva < (getSectionFromRva(sectionRva).VirtualAddress + getSectionFromRva(sectionRva).Misc.VirtualSize)))
-				return getSectionFromRva(sectionRva);
+   inline IMAGE_SECTION_HEADER& getFirstSection() { return *(PIMAGE_SECTION_HEADER)(&image[getDosHeader().e_lfanew + FIELD_OFFSET(IMAGE_NT_HEADERS, OptionalHeader) + getNtHeaders().FileHeader.SizeOfOptionalHeader]); }
+   inline IMAGE_IMPORT_DESCRIPTOR& getImportDescriptor(DWORD rva)	{ return *(PIMAGE_IMPORT_DESCRIPTOR)(&image[getSectionRelativeRva(rva)]); }
+   inline IMAGE_SECTION_HEADER& getSectionFromRva(DWORD rva) { return *(PIMAGE_SECTION_HEADER)(&image[rva]); }
+   inline DWORD getSectionRelativeRva(DWORD rva) { return rva - (findEnclosingSection(rva).VirtualAddress - findEnclosingSection(rva).PointerToRawData); }
+   inline IMAGE_SECTION_HEADER& findEnclosingSection(DWORD rva)
+   {
+      DWORD sectionRva = getRvaFromPtr((UINT_PTR)&getFirstSection());
+      for (unsigned i = 0; i < getNtHeaders().FileHeader.NumberOfSections; i++)
+      {
+         IMAGE_SECTION_HEADER section = getSectionFromRva(sectionRva);
+         if ((rva >= getSectionFromRva(sectionRva).VirtualAddress) && (rva < (getSectionFromRva(sectionRva).VirtualAddress + getSectionFromRva(sectionRva).Misc.VirtualSize)))
+            return getSectionFromRva(sectionRva);
 
-			sectionRva += sizeof(IMAGE_SECTION_HEADER);
-		}
-		throw std::exception("enclosing section not found");
-	}
+         sectionRva += sizeof(IMAGE_SECTION_HEADER);
+      }
+      throw std::exception("enclosing section not found");
+   }
 
-	// indicators of what was found present in the image...
-	enum class image_quality : int
-	{
-		no_content = 0,
-		no_dos_header,
-		bad_dos_signature,
-		no_nt_headers,
-		bad_nt_signature,
-		no_optional_headers,
-		bad_optional_headers_signature,
-		good_optional_header32,
-		good_optional_header64
-	};
+   // indicators of what was found present in the image...
+   enum class image_quality : int
+   {
+      no_content = 0,
+      no_dos_header,
+      bad_dos_signature,
+      no_nt_headers,
+      bad_nt_signature,
+      no_optional_headers,
+      bad_optional_headers_signature,
+      good_optional_header32,
+      good_optional_header64
+   };
 
-	// actual imagQuality found by verifyImage()
-	image_quality imageQuality;
+   // actual imagQuality found by verifyImage()
+   image_quality imageQuality;
 
-	///<summary>RAII helper for constructor</summary>
-	///<param name='aFileName'>the name of a candidate pecoff image file</param>
-	///<returns>true if some image data was presented, otherwise false</returns> 
-	bool initialize(std::string aFileName)
-	{
-		executableType = ExecutableType::FileExeTypeNone;
-		_64bit = false;
+   ///<summary>RAII helper for constructor</summary>
+   ///<param name='aFileName'>the name of a candidate pecoff image file</param>
+   ///<returns>true if some image data was presented, otherwise false</returns> 
+   bool initialize(std::string aFileName)
+   {
+      executableType = ExecutableType::FileExeTypeNone;
+      _64bit = false;
 
-		imageQuality = image_quality::no_content;
+      imageQuality = image_quality::no_content;
 
-		try
-		{
-			std::ifstream file(aFileName, std::ios::in | std::ios::binary);
-			file.unsetf(std::ios::skipws); // Stop eating new lines in binary mode!!!
-			image.insert(image.begin(), std::istream_iterator<BYTE>(file), std::istream_iterator<BYTE>());
+      try
+      {
+         std::ifstream file(aFileName, std::ios::in | std::ios::binary);
+         file.unsetf(std::ios::skipws); // Stop eating new lines in binary mode!!!
+         image.insert(image.begin(), std::istream_iterator<BYTE>(file), std::istream_iterator<BYTE>());
 
-			imageQuality = verifyImage();
+         imageQuality = verifyImage();
 
-			if (imageQuality == image_quality::no_content)
-				return false;
+         if (imageQuality == image_quality::no_content)
+            return false;
 
-			decodeImage();
+         decodeImage();
 
-			image.resize(0); // image no longer needed, purge it.
-			return true;
-		}
-		catch (...)
-		{
-			image.resize(0);
-			return false;
-		}
-	}
+         image.resize(0); // image no longer needed, purge it.
+         return true;
+      }
+      catch (...)
+      {
+         image.resize(0);
+         return false;
+      }
+   }
 
-	///<summary>indicator of trustworthy NtHeaders content</summary>
-	bool checkNtHeadersMagic()
-	{
-		if (LOWORD(getNtHeaders().Signature) == IMAGE_OS2_SIGNATURE)
-			return true;
-		
-		if (LOWORD(getNtHeaders().Signature) == IMAGE_OS2_SIGNATURE_LE)
-			return true;
+   ///<summary>indicator of trustworthy NtHeaders content</summary>
+   bool checkNtHeadersMagic()
+   {
+      if (LOWORD(getNtHeaders().Signature) == IMAGE_OS2_SIGNATURE)
+         return true;
+      
+      if (LOWORD(getNtHeaders().Signature) == IMAGE_OS2_SIGNATURE_LE)
+         return true;
 
-		if (getNtHeaders().Signature == IMAGE_NT_SIGNATURE)
-			return true;
+      if (getNtHeaders().Signature == IMAGE_NT_SIGNATURE)
+         return true;
 
-		return false;
-	}
+      return false;
+   }
 
-	///<summary>assess the condition of image data acquired</summary>
-	image_quality verifyImage()
-	{
-		if (image.size() < sizeof(IMAGE_DOS_HEADER))
-			return image_quality::no_content;
+   ///<summary>assess the condition of image data acquired</summary>
+   image_quality verifyImage()
+   {
+      if (image.size() < sizeof(IMAGE_DOS_HEADER))
+         return image_quality::no_content;
 
-		const int cbyDataAvailable = static_cast<int>(image.size());
+      const int cbyDataAvailable = static_cast<int>(image.size());
 
-		int cbyDataRequired = sizeof(IMAGE_DOS_HEADER);
-		if (cbyDataRequired > cbyDataAvailable)
-			return image_quality::no_dos_header;
-		
-		if (getDosHeader().e_magic != IMAGE_DOS_SIGNATURE)
-			return image_quality::bad_dos_signature;
+      int cbyDataRequired = sizeof(IMAGE_DOS_HEADER);
+      if (cbyDataRequired > cbyDataAvailable)
+         return image_quality::no_dos_header;
+      
+      if (getDosHeader().e_magic != IMAGE_DOS_SIGNATURE)
+         return image_quality::bad_dos_signature;
 
-		cbyDataRequired = getDosHeader().e_lfanew + sizeof(IMAGE_NT_HEADERS);
-		if (cbyDataRequired > cbyDataAvailable)
-			return image_quality::no_nt_headers;
+      cbyDataRequired = getDosHeader().e_lfanew + sizeof(IMAGE_NT_HEADERS);
+      if (cbyDataRequired > cbyDataAvailable)
+         return image_quality::no_nt_headers;
 
-		if (!checkNtHeadersMagic())
-			return image_quality::bad_nt_signature;
+      if (!checkNtHeadersMagic())
+         return image_quality::bad_nt_signature;
 
-		cbyDataRequired += getNtHeaders().FileHeader.SizeOfOptionalHeader;
-		if (cbyDataRequired > cbyDataAvailable)
-			return image_quality::no_optional_headers;
+      cbyDataRequired += getNtHeaders().FileHeader.SizeOfOptionalHeader;
+      if (cbyDataRequired > cbyDataAvailable)
+         return image_quality::no_optional_headers;
 
-		if ((getNtHeaders().OptionalHeader.Magic) == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
-			return image_quality::good_optional_header32;
+      if ((getNtHeaders().OptionalHeader.Magic) == IMAGE_NT_OPTIONAL_HDR32_MAGIC)
+         return image_quality::good_optional_header32;
 
-		if ((getNtHeaders().OptionalHeader.Magic) == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
-			return image_quality::good_optional_header64;
+      if ((getNtHeaders().OptionalHeader.Magic) == IMAGE_NT_OPTIONAL_HDR64_MAGIC)
+         return image_quality::good_optional_header64;
 
-		return image_quality::bad_optional_headers_signature;
-	}
+      return image_quality::bad_optional_headers_signature;
+   }
 
-	///<summary>64-bit image is indicated directly (if optionalHeader is present)</summary>
-	inline bool decode64bitIndication() { return (((getOptionalHeader().Magic) == IMAGE_NT_OPTIONAL_HDR64_MAGIC) ? true : false); }
+   ///<summary>64-bit image is indicated directly (if optionalHeader is present)</summary>
+   inline bool decode64bitIndication() { return (((getOptionalHeader().Magic) == IMAGE_NT_OPTIONAL_HDR64_MAGIC) ? true : false); }
 
-	///<summary>guarded interpretation of image data. 
-	/// imageQuality is used to guard against dereferencing data that is not available or trustworthy in the image.</summary>
-	void decodeImage()
-	{
-		switch (imageQuality)
-		{
-		case image_quality::no_content:
-		case image_quality::no_dos_header:
-		case image_quality::bad_dos_signature:
-			break;												//corrupt, unrecognized and unsupported here
+   ///<summary>guarded interpretation of image data. 
+   /// imageQuality is used to guard against dereferencing data that is not available or trustworthy in the image.</summary>
+   void decodeImage()
+   {
+      switch (imageQuality)
+      {
+      case image_quality::no_content:
+      case image_quality::no_dos_header:
+      case image_quality::bad_dos_signature:
+         break;												//corrupt, unrecognized and unsupported here
 
-		case image_quality::no_nt_headers:
-		case image_quality::bad_nt_signature:
-			executableType = ExecutableType::FileExeTypeDosExe;
-			break;
+      case image_quality::no_nt_headers:
+      case image_quality::bad_nt_signature:
+         executableType = ExecutableType::FileExeTypeDosExe;
+         break;
 
-		case image_quality::no_optional_headers:
-			executableType = ExecutableType::FileExeTypeNone;	//corrupt, unrecognized and unsupported here
-			break;
+      case image_quality::no_optional_headers:
+         executableType = ExecutableType::FileExeTypeNone;	//corrupt, unrecognized and unsupported here
+         break;
 
-		case image_quality::good_optional_header32:
-		case image_quality::good_optional_header64:
-			executableType = decodeExecutableType();
-			_64bit = decode64bitIndication();
-			break;
+      case image_quality::good_optional_header32:
+      case image_quality::good_optional_header64:
+         executableType = decodeExecutableType();
+         _64bit = decode64bitIndication();
+         break;
 
-		case image_quality::bad_optional_headers_signature:
-			break;
+      case image_quality::bad_optional_headers_signature:
+         break;
 
-		default:
-			break;
-		}
-	}
+      default:
+         break;
+      }
+   }
 
-	///<summary>subsystem is indicated directly (if NtHeaders is present)</summary>
-	inline WORD decodeSubsystem() { return getNtHeaders().OptionalHeader.Subsystem; }
+   ///<summary>subsystem is indicated directly (if NtHeaders is present)</summary>
+   inline WORD decodeSubsystem() { return getNtHeaders().OptionalHeader.Subsystem; }
 
-	///<summary>infer if the image is a kernel mode driver from image content</summary>
-	bool decodeKernelMode()
-	{
-		const std::string nameToMatch = "ntoskrnl.exe";
+   ///<summary>infer if the image is a kernel mode driver from image content</summary>
+   bool decodeKernelMode()
+   {
+      const std::string nameToMatch = "ntoskrnl.exe";
 
-		DWORD importsRva;
+      DWORD importsRva;
 
-		switch (getNtHeaders().OptionalHeader.Magic)
-		{
-		case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
-			importsRva = getOptionalHeader32().DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-			break;
+      switch (getNtHeaders().OptionalHeader.Magic)
+      {
+      case IMAGE_NT_OPTIONAL_HDR32_MAGIC:
+         importsRva = getOptionalHeader32().DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+         break;
 
-		case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
-			importsRva = getOptionalHeader64().DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
-			break;
+      case IMAGE_NT_OPTIONAL_HDR64_MAGIC:
+         importsRva = getOptionalHeader64().DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress;
+         break;
 
-		default:
-			throw std::exception("bad magic");
-		}
+      default:
+         throw std::exception("bad magic");
+      }
 
-		if (!importsRva)
-			return false;
+      if (!importsRva)
+         return false;
 
-		while (true)
-		{
-			IMAGE_IMPORT_DESCRIPTOR& importDesc = getImportDescriptor(importsRva);
+      while (true)
+      {
+         IMAGE_IMPORT_DESCRIPTOR& importDesc = getImportDescriptor(importsRva);
 
-			if ((importDesc.TimeDateStamp == 0) && (importDesc.Name == 0))
-				break;
+         if ((importDesc.TimeDateStamp == 0) && (importDesc.Name == 0))
+            break;
 
-			std::string nameOfEntry = (char*)getPtrFromRva(getSectionRelativeRva(importDesc.Name));
-			std::transform(nameOfEntry.begin(), nameOfEntry.end(), nameOfEntry.begin(), ::tolower);
-			if (nameToMatch.compare(nameOfEntry) == 0)
-				return true;
+         std::string nameOfEntry = (char*)getPtrFromRva(getSectionRelativeRva(importDesc.Name));
+         std::transform(nameOfEntry.begin(), nameOfEntry.end(), nameOfEntry.begin(), ::tolower);
+         if (nameToMatch.compare(nameOfEntry) == 0)
+            return true;
 
-			importsRva += sizeof(IMAGE_IMPORT_DESCRIPTOR);
-		}
+         importsRva += sizeof(IMAGE_IMPORT_DESCRIPTOR);
+      }
 
-		return false;
-	}
+      return false;
+   }
 
-	///<summary>infer executableType property from image content</summary>
-	ExecutableType decodeExecutableType()
-	{
-		if (getNtHeaders().FileHeader.Characteristics & IMAGE_FILE_DLL)
-			return ExecutableType::FileExeTypeDll; // when dll is flagged type is always dll 
+   ///<summary>infer executableType property from image content</summary>
+   ExecutableType decodeExecutableType()
+   {
+      if (getNtHeaders().FileHeader.Characteristics & IMAGE_FILE_DLL)
+         return ExecutableType::FileExeTypeDll; // when dll is flagged type is always dll 
 
-		if (decodeSubsystem() == IMAGE_SUBSYSTEM_NATIVE)
-		{
-			if (decodeKernelMode())
-				return ExecutableType::FileExeTypeSys; // this is how drivers are indicated, type is sys
+      if (decodeSubsystem() == IMAGE_SUBSYSTEM_NATIVE)
+      {
+         if (decodeKernelMode())
+            return ExecutableType::FileExeTypeSys; // this is how drivers are indicated, type is sys
 
-			return ExecutableType::FileExeTypeExe;
-		}
+         return ExecutableType::FileExeTypeExe;
+      }
 
-		if (getNtHeaders().FileHeader.Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) // if none of above and still executable then type is exe
-			return ExecutableType::FileExeTypeExe;
+      if (getNtHeaders().FileHeader.Characteristics & IMAGE_FILE_EXECUTABLE_IMAGE) // if none of above and still executable then type is exe
+         return ExecutableType::FileExeTypeExe;
 
-		return ExecutableType::FileExeTypeNone; //corrupt, unrecognized and unsupported here
-	}
+      return ExecutableType::FileExeTypeNone; //corrupt, unrecognized and unsupported here
+   }
 
 };
 
