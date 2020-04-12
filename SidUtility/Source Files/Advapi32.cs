@@ -201,11 +201,11 @@ namespace Pinvoke.Advapi32
         [StructLayout(LayoutKind.Sequential)]
         public struct TOKEN_USER
         {
-            public _SID_AND_ATTRIBUTES User;
+            public SID_AND_ATTRIBUTES User;
         }
 
         [StructLayout(LayoutKind.Sequential)]
-        public struct _SID_AND_ATTRIBUTES
+        public struct SID_AND_ATTRIBUTES
         {
             public IntPtr Sid;
             public int Attributes;

@@ -93,10 +93,6 @@ namespace UnitTestChallenges
         [TestMethod]
         public void TestWithServiceSid()         // Test with SID of a service that runs under another user.​
         {
-
-            // get list of Windows services
-            ServiceController[] services = ServiceController.GetServices();
-
             try
             {
                 foreach (ServiceController scTemp in ServiceController.GetServices())

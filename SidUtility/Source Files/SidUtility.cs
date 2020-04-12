@@ -42,9 +42,8 @@ namespace Challenge1
         /// <returns>string form of security identifier</returns>
         private static string GetSidString(byte[] sid)
         {
-            IntPtr ptrSid;
             string sidString;
-            if (!Advapi32.ConvertSidToStringSid(sid, out ptrSid))
+            if (!Advapi32.ConvertSidToStringSid(sid, out IntPtr ptrSid))
                 throw new System.ComponentModel.Win32Exception();
             try
             {
@@ -64,10 +63,9 @@ namespace Challenge1
         private static void DumpUserInfo(IntPtr processHandle, out IntPtr pSID)
         {
             UInt32 Access = Advapi32.TOKEN_QUERY;
-            IntPtr processToken = IntPtr.Zero;
             pSID = IntPtr.Zero;
 
-            if (!Advapi32.OpenProcessToken(processHandle, Access, out processToken))
+            if (!Advapi32.OpenProcessToken(processHandle, Access, out IntPtr processToken))
                 throw new Exception("Can't open process token");
 
             ProcessTokenToSid(processToken, out pSID);
@@ -111,12 +109,11 @@ namespace Challenge1
             uint cchName = (uint)name.Capacity;
             StringBuilder referencedDomainName = new StringBuilder();
             uint cchReferencedDomainName = (uint)referencedDomainName.Capacity;
-            Advapi32.SID_NAME_USE sidUse;
             String stringSid;
 
             try
             {
-                if (!Advapi32.LookupAccountSid(null, abySid, name, ref cchName, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+                if (!Advapi32.LookupAccountSid(null, abySid, name, ref cchName, referencedDomainName, ref cchReferencedDomainName, out _ ))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             catch (Win32Exception e)
@@ -126,7 +123,7 @@ namespace Challenge1
 
                 name.EnsureCapacity((int)cchName);
                 referencedDomainName.EnsureCapacity((int)cchReferencedDomainName);
-                if (!Advapi32.LookupAccountSid(null, abySid, name, ref cchName, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+                if (!Advapi32.LookupAccountSid(null, abySid, name, ref cchName, referencedDomainName, ref cchReferencedDomainName, out _ ))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
 
@@ -157,11 +154,10 @@ namespace Challenge1
             uint cbSid = 0;
             StringBuilder referencedDomainName = new StringBuilder();
             uint cchReferencedDomainName = (uint)referencedDomainName.Capacity;
-            Advapi32.SID_NAME_USE sidUse;
 
             try
             {
-                if (!Advapi32.LookupAccountName(null, accountName, abySid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+                if (!Advapi32.LookupAccountName(null, accountName, abySid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out _ ))
                     throw new Win32Exception(Marshal.GetLastWin32Error());
             }
             catch (Win32Exception e)
@@ -178,7 +174,7 @@ namespace Challenge1
             }
             abySid = new byte[cbSid];
             referencedDomainName.EnsureCapacity((int)cchReferencedDomainName);
-            if (!Advapi32.LookupAccountName(null, accountName, abySid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out sidUse))
+            if (!Advapi32.LookupAccountName(null, accountName, abySid, ref cbSid, referencedDomainName, ref cchReferencedDomainName, out _ ))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
             return GetFormattedSid(abySid);
         }
@@ -189,8 +185,7 @@ namespace Challenge1
         /// <returns>"domain\name : S-xxx..." where domain is the user domain, name is the user name and S-xxx... is the string form of the SID</returns>
         public static string GetFormattedSidByProcess(Process process)
         {
-            IntPtr pSID = IntPtr.Zero;
-            DumpUserInfo(process.Handle, out pSID);
+            DumpUserInfo(process.Handle, out IntPtr pSID);
             return GetFormattedSid(new SecurityIdentifier(pSID));
         }
     }
