@@ -20,7 +20,7 @@ if (sidFormat != NULL)
        free(sidFormat);
 }
 
-output:   XXX\gabriel.bercea : S-1-5-21-545566299-1214877287-2695374493
+output:   XXX\john.doe : S-1-5-21-545466299-1214899287-2695377493
  
 
 Test the function by giving the SID of the current thread as input.

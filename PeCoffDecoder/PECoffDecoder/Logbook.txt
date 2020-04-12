@@ -136,7 +136,7 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 *******                                  JUST RUN THE UNIT TESTS AND INSPECT THE CODE                                      *******
 **********************************************************************************************************************************
 
-201509211000 - Gabriel reviewed/identified limitation on driver identification (needs to decode imports and identify ntoskrnl.exe)
+201509211000 - Third party reviewed/identified limitation on driver identification (needs to decode imports and identify ntoskrnl.exe)
 			   I also want to do this challenge in the modern c++ idiom
 
 201509201456 - Experiencing all manner of complier and linker crashes when trying to pimpl pecoff.
@@ -151,7 +151,7 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 201509241000 - SOME parts still DO work. pedump code shows its age: its 32-bit code for 32-bit images
 201509241115 - Re-puropsed a fragment from PeDump (32bit images) and tested it works (x86 is good, x64 binary has bugs)
 201509241335 - Pointer arithmetic fixed (32 bit image support now works as x86 & x64)
-201509241343 - Gabriel's point (ntoskernel.exe present as import means a kernel driver) is now addressed. 
+201509241343 - Feedback point (ntoskernel.exe present as an import, is the only clear indication of a kernel driver) is now addressed. 
 201509241343 - Now fully featured (except for the read access issue that limited testing the main program).
 201509241833 - Fixed the read access issue that limited testing the main program.
 201509250230 - Finished cleanup and refactoring to basic level.
