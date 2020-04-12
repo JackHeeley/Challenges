@@ -122,3 +122,4 @@ and you have to supply full explicit namsepace paths in source of My.SidUtilitie
 201509170940 Challenge 1 complete.
 201603050008 Upgrade to Visual Studio 2015 & .Net 4.6.1
 202004092145 Upgrade to Visual Studio 2019 (v16.5.3) & published on Github
+202004102025 - Added minimal GPL 3.0 banners

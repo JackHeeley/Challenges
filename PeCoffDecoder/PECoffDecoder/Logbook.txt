@@ -78,7 +78,7 @@ strategy, or it might confirm option 1.
 
 Design option 3. Search the SDK & DDK material for guidance.
 
-Seems I was on the right path with option 1. JUST NEED SONME STRUCTS TO DECODE PE HEADER (CHECK WIKIPEDIA MAP 
+Seems I was on the right path with option 1. JUST NEED SOME STRUCTS TO DECODE PE HEADER (CHECK WIKIPEDIA MAP 
 to see if exe type and 32/64 are accessible in the first part, or if we need to dereference pointers...) 
 
 0x5A4D is the PE signature: We'll ignore the dos stub - which might contain (Intel 8088 8-bit) 16 or 32 bit code.
@@ -87,15 +87,15 @@ Wiki links to latest reference PE/COFF here... https://msdn.microsoft.com/en-us/
 
 201509181320 Downloaded added PECOFF spec to project and scanned it.
 
-The COFF optional header magic number" determines whether an image is a PE32 or PE32+ executable. 
+The COFF optional header "magic number" determines whether an image is a PE32 or PE32+ executable. 
 
-Although not absolutely expressed as in tne assignment PE32 is restricted to 32 bit formats, and PE32+ supports 
-64 bit address. So we can assume the support is always used and PE32+ simply mweans a 64 bit 'program'.
-This is at a fixed location in the file and simply has one of two values.So that is one possibility.
+Although not absolutely expressed as in the assignment PE32 is restricted to 32 bit formats, and PE32+ supports 
+64 bit address. So we can assume the support is always used and PE32+ simply means a 64 bit 'program'.
+This is at a fixed location in the file and simply has one of two values. So that is one possibility.
 
 2.3.2 Characteristics (flags) of COFF header appear to offer everything we need in one place.
 
-1. Open candidate for read read file start into memory
+1. Open candidate for read, read file start into memory
 2. Check signature in first 2 bytes 
 3. Read the file offset specified at offset 0x3c, 
 4. Check the 4-byte signature at that offset. (that identifies the file as a PE format image file. This signature is “PE\0\0” (the letters “P” and “E” followed by two null bytes).
@@ -113,7 +113,7 @@ Identifies that winnt.h contains typedef for IMAGE_DOS_HEADER, *PIMAGE_DOS_HEADE
 'MZ' is present in the file so that seems good.
 
 201509181527 However sample falls at the first hurdle. It misses the PE Header.
-201509181623 Huh sample is good. STL stream is bad and it dropped some bytes. Presumably misused it somehow, but I can't see it. 
+201509181623 Huh sample is good. STL stream is bad and it dropped some bytes. Presumably I mis-used it somehow, but I can't see it. 
 
 Oldstyle c++ using fopen_s works JUST fine. 
 
@@ -151,7 +151,8 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 201509241000 - SOME parts still DO work. pedump code shows its age: its 32-bit code for 32-bit images
 201509241115 - Re-puropsed a fragment from PeDump (32bit images) and tested it works (x86 is good, x64 binary has bugs)
 201509241335 - Pointer arithmetic fixed (32 bit image support now works as x86 & x64)
-201509241343 - Gabriel's point addressed. Now fully featured (except for the read access issue that limited testing the main program).
+201509241343 - Gabriel's point (ntoskernel.exe present as import means a kernel driver) is now addressed. 
+201509241343 - Now fully featured (except for the read access issue that limited testing the main program).
 201509241833 - Fixed the read access issue that limited testing the main program.
 201509250230 - Finished cleanup and refactoring to basic level.
 201509250456 - Finished cleanup and refactoring (recombining & removing 32 and 64 specialisations of helper class)
@@ -163,10 +164,10 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 			   some bug(s)and chosen an over-safe design (with separate 32/64 architectures).I suspect that at least SOME of 
 			   this  is not necessary (and all of it is complex). Worth another look.
 			   
-201509261358 - Confirmed that subsystemIitialiazer 32/64 can simply use the pNtHeaders (doesnt need the 32/64 bit struct overlays)
+201509261358 - Confirmed that subsystemInitializer 32/64 can simply use the pNtHeaders (doesnt need the 32/64 bit struct overlays)
 201509261509 - Indeed code was massively over defensive. 32/64 affects the later part of the optional header. Essentially only
 			   the function isKernelModeInitializer needs to be architecturally aware... 
-201509261546 - Ahem... because the other parts arent used any more!
+201509261546 - Ahem... because the other parts aren't even used any more!
 
 201509261834 - Revised reviewed and reworked comments. 1.0.0.481 (481 = svn head revision in home repo)
 
@@ -181,4 +182,5 @@ pecoff.cpp + pecoff.h is only 156 ncss (non comentary source statements)
 
 201509272246 - Check-in as build 484 - Cleanup, comment and consistency changes.
 
-202004092145 - Upgrade to Visual Studio 2019 (v16.5.3) & published on Github
+202004092145 - Upgraded to Visual Studio 2019 (v16.5.3) & published on Github.
+202004102025 - Added the appropriate GPL 3.0 banners.
